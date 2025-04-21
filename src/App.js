@@ -64,12 +64,33 @@ function App() {
     });
   }
   let balance = 0;
+  let income = 0;
+  let expenses = 0;
+  
   for (const transaction of transactions) {
-    balance += Number(transaction.price);
+    const amount = Number(transaction.price);
+    balance += amount;
+    if (amount > 0) income += amount;
+    else expenses += Math.abs(amount);
   }
 
   return (
     <main>
+      <h1 className="app-title">Nobu - Money Tracker</h1>
+      <div className="summary-cards">
+        <div className="summary-card">
+          <div className="summary-title">Income</div>
+          <div className="summary-amount green">+${income.toFixed(2)}</div>
+        </div>
+        <div className="summary-card">
+          <div className="summary-title">Expenses</div>
+          <div className="summary-amount red">-${expenses.toFixed(2)}</div>
+        </div>
+        <div className="summary-card">
+          <div className="summary-title">Balance</div>
+          <div className="summary-amount">${balance.toFixed(2)}</div>
+        </div>
+      </div>
       <h1>${balance.toFixed(2)}</h1>
       <form onSubmit={addNewTransaction}>
         <div className="basic">

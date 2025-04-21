@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
 const TransactionModel = require('./models/Transaction');
-
+require('dotenv').config();
 // Enable CORS for all routes
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
@@ -34,10 +34,14 @@ app.get('/api/test', (req, res) => {
 
 app.post('/api/transaction', async (req, res) => {
     await mongoose.connect(process.env.MONGO_URL);
-    const { name, description, datetime, price } = req.body;
+    const { name, description, datetime } = req.body;
+    
+    // Extract price from name (e.g., "+200 test" -> "+200")
+    const price = name.split(' ')[0];
+    const transactionName = name.substring(price.length + 1);
     
     const transaction = await TransactionModel.create({
-        name,
+        name: transactionName,
         description,
         datetime,
         price
@@ -50,15 +54,10 @@ app.post('/api/transaction', async (req, res) => {
 
 app.get('/api/transactions', async (req, res) => {
     await mongoose.connect(process.env.MONGO_URL);
-    const transactions = await TransactionModel.find({}).sort({ datetime: -1 });
+    const transactions = await TransactionModel.find({});
     res.json(transactions);
 });
 
-app.get('/api/transactions', async (req, res) => {
-    await mongoose.connect(process.env.MONGO_URL)
-    const transactions = await TransactionModel.find({})
-    res.json(transactions);
-});
 const PORT = 4040;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
