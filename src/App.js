@@ -86,10 +86,6 @@ function App() {
           <div className="summary-title">Expenses</div>
           <div className="summary-amount red">-${expenses.toFixed(2)}</div>
         </div>
-        <div className="summary-card">
-          <div className="summary-title">Balance</div>
-          <div className="summary-amount">${balance.toFixed(2)}</div>
-        </div>
       </div>
       <h1>${balance.toFixed(2)}</h1>
       <form onSubmit={addNewTransaction}>
@@ -97,7 +93,7 @@ function App() {
           <input type="text" 
                  value={name}
                  onChange={ev => setName(ev.target.value)}
-                 placeholder={"+200 new samsung tv"}/>
+                 placeholder={"+200 New TV"}/>
           <input value={datetime}
                  onChange={ev => setDatetime(ev.target.value)}
                  type="datetime-local"/>
@@ -106,7 +102,7 @@ function App() {
         <input type="text" 
                      value={description} 
                      onChange={ev => setDescription(ev.target.value)}
-                     placeholder={"description"}/>
+                     placeholder={"Transaction description"}/>
       </div>
         <button type="submit">Add new transaction</button>
       </form>
