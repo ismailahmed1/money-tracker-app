@@ -34,14 +34,10 @@ app.get('/api/test', (req, res) => {
 
 app.post('/api/transaction', async (req, res) => {
     await mongoose.connect(process.env.MONGO_URL);
-    const { name, description, datetime } = req.body;
-    
-    // Extract price from name (e.g., "+200 test" -> "+200")
-    const price = name.split(' ')[0];
-    const transactionName = name.substring(price.length + 1);
+    const { name, description, datetime, price } = req.body;
     
     const transaction = await TransactionModel.create({
-        name: transactionName,
+        name,
         description,
         datetime,
         price
@@ -54,10 +50,15 @@ app.post('/api/transaction', async (req, res) => {
 
 app.get('/api/transactions', async (req, res) => {
     await mongoose.connect(process.env.MONGO_URL);
-    const transactions = await TransactionModel.find({});
+    const transactions = await TransactionModel.find({}).sort({ datetime: -1 });
     res.json(transactions);
 });
 
+app.get('/api/transactions', async (req, res) => {
+    await mongoose.connect(process.env.MONGO_URL)
+    const transactions = await TransactionModel.find({})
+    res.json(transactions);
+});
 const PORT = 4040;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

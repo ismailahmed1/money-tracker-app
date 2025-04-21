@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
@@ -6,11 +6,26 @@ function App() {
   const [name, setName] = useState('');
   const[datetime, setDatetime] = useState('');
   const [description, setDescription] = useState('')
+  const [transactions, setTransactions] = useState([]);
+  useEffect(() => {
+    getTransactions().then(transactions => {
+      setTransactions(transactions);
+    });
+  }, []);
+
+  async function getTransactions(){
+    const url = process.env.REACT_APP_API_URL+'/transactions';
+    const response = await fetch(url);
+    return await response.json();
+  }
+
   function addNewTransaction(ev) {
     ev.preventDefault();
     const url = process.env.REACT_APP_API_URL + '/transaction';
+    
+    // Extract price from name (e.g., "+200 new samsung tv" -> "+200")
     const price = name.split(' ')[0];
-    const transactionName = name.substring(price.length + 1);
+    const transactionName = name.substring(price.length + 1).trim();
     
     const requestBody = {
         name: transactionName,
@@ -27,14 +42,35 @@ function App() {
       },
       body: JSON.stringify(requestBody)
     })
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
     .then(json => {
       console.log('result', json);
+      // Clear the form after successful submission
+      setName('');
+      setDescription('');
+      setDatetime('');
+      // Refresh transactions
+      getTransactions().then(transactions => {
+        setTransactions(transactions);
+      });
+    })
+    .catch(error => {
+      console.error('Error:', error);
     });
   }
+  let balance = 0;
+  for (const transaction of transactions) {
+    balance += Number(transaction.price);
+  }
+
   return (
     <main>
-      <h1>$400<span>.00</span></h1>
+      <h1>${balance.toFixed(2)}</h1>
       <form onSubmit={addNewTransaction}>
         <div className="basic">
           <input type="text" 
@@ -54,36 +90,18 @@ function App() {
         <button type="submit">Add new transaction</button>
       </form>
       <div className="transactions">
-        <div className="transaction">
+        {transactions.length > 0 && transactions.map(transaction => 
+          <div className="transaction">
           <div className='left'>
-            <div className="name">New Samsung TV</div>
-            <div className="description">It was time for a new tv</div>
+            <div className="name">{transaction.name}</div>
+            <div className="description">{transaction.description}</div>
           </div>
           <div className='right'>
-            <div className="price red">-$500</div>
+            <div className={`price ${transaction.price < 0 ? 'red' : 'green'}`}>{transaction.price}</div>
             <div className="datetime">2025-04-20 6:41</div>
           </div>
         </div>
-        <div className="transaction">
-          <div className='left'>
-            <div className="name">Gig job new website</div>
-            <div className="description">It was time for a new tv</div>
-          </div>
-          <div className='right'>
-            <div className="price green">+$500</div>
-            <div className="datetime">2025-04-20 6:41</div>
-          </div>
-        </div>
-        <div className="transaction">
-          <div className='left'>
-            <div className="name">iPhone</div>
-            <div className="description">It was time for a new tv</div>
-          </div>
-          <div className='right'>
-            <div className="price red">-$900</div>
-            <div className="datetime">2025-04-20 6:41</div>
-          </div>
-        </div>
+        )}
       </div>
     </main>
   );
